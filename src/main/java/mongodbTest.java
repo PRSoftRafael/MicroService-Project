@@ -1,12 +1,16 @@
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.CursorType;
+import com.mongodb.client.*;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Filter;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class mongodbTest implements AutoCloseable{
 
@@ -32,9 +36,9 @@ public class mongodbTest implements AutoCloseable{
     }
     */
 
-    public void insertPerson(MongoClient client, String name, String password, String date, String email){
-        MongoDatabase db = client.getDatabase("sampleDB");
-        MongoCollection<Document> col = db.getCollection("sampleCollection");
+    public void mongodbCreatePerson(MongoClient client, String name, String password, String date, String email){
+        MongoDatabase db = client.getDatabase("RegisteredPeopleDB");
+        MongoCollection<Document> col = db.getCollection("RegisteredPeopleCollection");
 
         Document newPerson;
         newPerson = new Document("_id", "0")
@@ -45,18 +49,33 @@ public class mongodbTest implements AutoCloseable{
         col.insertOne(newPerson);
     }
 
-    public void insertArray(MongoClient client){
-        MongoDatabase db = client.getDatabase("sampleDB");
-        MongoCollection<Document> col = db.getCollection("sampleCollection");
+    public void mongodbInsertPost(MongoClient client, int id, String post){
+        MongoDatabase db = client.getDatabase("PostsDB");
+        MongoCollection<Document> col = db.getCollection("PostsCollection");
 
-        List<Document> array = new ArrayList<>();
-        array.add(new Document("picture", "bild").append("Kommentar", "new world").append("datum", "14.10.2021"));
-        array.add(new Document("picture", "bild").append("Kommentar", "new world").append("datum", "14.10.2021"));
-        array.add(new Document("picture", "bild").append("Kommentar", "new world").append("datum", "14.10.2021"));
+        Document document = col.find().first().append("post", post);
 
-        Document newPerson;
-        newPerson = new Document("_id", "2").append("array", array);
-        col.insertOne(newPerson);
+        col.insertOne(document);
+    }
+
+    public void findPost(MongoClient client, String post, int id){
+        MongoDatabase db = client.getDatabase("PostsDB");
+        MongoCollection<Document> col = db.getCollection("PostsCollection");
+
+        Document testDoc = new Document().append("_id", id);
+
+        MongoCursor test = col.find(testDoc).iterator();
+
+        if(test.hasNext()){
+            Bson queryFilter = eq("_id", new ObjectId(String.valueOf(id)));
+        }
+        else {
+            List<String> testList = new ArrayList<>();
+            testList.add(post);
+            testDoc.append("posts", testList);
+
+            col.insertOne(testDoc);
+        }
     }
 
     @Override
