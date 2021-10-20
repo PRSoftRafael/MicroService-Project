@@ -1,62 +1,56 @@
 
-import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.neo4j.driver.Config;
-import org.neo4j.driver.exceptions.Neo4jException;
 
 public class Main {
 
     public static void main(String ... args) {
 
-        /*
-        MongoClient registeredClient = MongoClients.create("mongodb+srv://testUser:testUser@cluster0.kql6i.mongodb.net/RegisteredPeopleDB?retryWrites=true&w=majority");
+        /**
+         * MongoDB setUp
+         */
+        MongoClient registeredClient = MongoClients.create("mongodb+srv://testUser:testUser@cluster0.kql6i.mongodb.net/RegisteredUsersDB?retryWrites=true&w=majority");
+        UserManagement mongoDbUser = new UserManagement(registeredClient, "RegisteredUsersDB", "RegisteredUsersCol");
 
-        try(mongodbTest mongodb = new mongodbTest(registeredClient)){
-            mongodb.mongodbCreatePerson(registeredClient, "Simon", "1489123434s6s6", "14.10.2021", "simon@gmail.com");
-        }
-        catch(Exception exception){
-            System.out.println("Person could not be inserted!");
-        }
+        /**
+         * MongoDB createUser
+         */
+        mongoDbUser.createUser("Simon", "123456789", "20.10.2021", "simon@gmail.com");
+        mongoDbUser.createUser("Max", "abc", "20.12.2021", "max@gmail.com");
 
+        /**
+         * MongoDB update user information
+         */
+        mongoDbUser.updateName(0, "Simon", "Rafael");
+        mongoDbUser.updatePassword(0, "123456789", "987654321");
+        mongoDbUser.updateDate(0, "20.10.2021", "30.10.2021");
+        mongoDbUser.updateEmail(0, "simon@gmail.com", "rafael@gmail.com");
 
-        MongoClient postClient = MongoClients.create("mongodb+srv://testUser:testUser@cluster0.kql6i.mongodb.net/PostsDB?retryWrites=true&w=majority");
+        //-----------------------------------------------------------------------
 
-        try(mongodbTest mongodb = new mongodbTest(postClient)){
-            mongodb.mongodbInsertPost(postClient, 0,"Test");
-        }
-        catch(Exception exception){
-            System.out.println("Post could not be inserted!");
-        }
-
+        /**
+         * Neo4J setUp
          */
 
-        MongoClient registeredClient = MongoClients.create("mongodb+srv://testUser:testUser@cluster0.kql6i.mongodb.net/RegisteredPeopleDB?retryWrites=true&w=majority");
+        String neo4jUri = "neo4j+s://bd8deffd.databases.neo4j.io:7687";
+        String neo4jUser = "neo4j";
+        String neo4jPassword = "b1qmJ_kAC94PmkV-Pd01Hrf9zOLstS3St1MRgrqSVmM";
 
-        try(mongodbTest mongodb = new mongodbTest(registeredClient)){
-            mongodb.findPost(registeredClient, "Hello World", 0);
-        }
-        catch(Exception exception){
-            System.out.println("Post could not be inserted!");
-        }
+        FollowRelation app = new FollowRelation(neo4jUri, neo4jUser, neo4jPassword, Config.defaultConfig());
+
+        /**
+         * Neo4J createUser
+         */
+
+        app.createPerson("Alice");
+        app.createPerson("Max");
 
 
+        /**
+         * Neo4J follows relation
+         */
 
-
-        /*
-
-        String uri = "neo4j+s://bd8deffd.databases.neo4j.io:7687";
-
-        String user = "neo4j";
-        String password = "b1qmJ_kAC94PmkV-Pd01Hrf9zOLstS3St1MRgrqSVmM";
-
-        try (neo4jTest app = new neo4jTest(uri, user, password, Config.defaultConfig())) {
-            app.createFollowConnection("Alice", "Max");
-            //app.createPerson("Alice", "123456");
-        }
-        catch (Exception ex){
-            System.out.println("Person could not be created!");
-        }
-        */
+        app.createFollowConnection("Alice", "Max");
     }
 }

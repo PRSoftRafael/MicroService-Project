@@ -2,20 +2,18 @@ import org.neo4j.driver.*;
 import org.neo4j.driver.Record;
 import org.neo4j.driver.exceptions.Neo4jException;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.neo4j.driver.Config.TrustStrategy.trustAllCertificates;
+public class FollowRelation implements AutoCloseable {
 
-public class neo4jTest implements AutoCloseable {
-    private static final Logger LOGGER = Logger.getLogger(neo4jTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FollowRelation.class.getName());
     private final Driver driver;
     private boolean exists;
 
-    public neo4jTest(String uri, String user, String password, Config config) {
+    public FollowRelation(String uri, String user, String password, Config config) {
         driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password), config);
     }
 
@@ -24,12 +22,11 @@ public class neo4jTest implements AutoCloseable {
         driver.close();
     }
 
-    public void createPerson(final String personName, final String password) {
-        String createPersonQuery = "CREATE (n:Person {name: $personName, password: $password}) RETURN n";
+    public void createPerson(String name) {
+        String createPersonQuery = "CREATE (n:Person {name: $name}) RETURN n";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("personName", personName);
-        params.put("password", password);
+        params.put("name", name);
 
         try(Session session = driver.session()) {
             Record record = session.writeTransaction(tx -> {
